@@ -1,0 +1,59 @@
+package http
+
+import (
+	"net/http"
+	"order_system/model"
+
+	"github.com/labstack/echo/v4"
+)
+
+func (s *Server) CreateOrder(c echo.Context) error {
+	var order model.Order
+	err := c.Bind(&order)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Bad request")
+	}
+
+	err = s.OrderRepository.Store(order)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.JSON(http.StatusCreated, "Order created")
+}
+
+func (s *Server) GetOrderStatus(c echo.Context) error {
+	OrderID := struct {
+		ID int `json:"id"`
+	}{}
+	err := c.Bind(&OrderID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Bad request")
+	}
+
+	status, err := s.OrderRepository.GetOrderStatus(OrderID.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.JSON(http.StatusOK, status)
+
+}
+
+func (s *Server) UpdateOrderStatus(c echo.Context) error {
+	OrderID := struct {
+		ID     int    `json:"id"`
+		Status string `json:"status"`
+	}{}
+	err := c.Bind(&OrderID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Bad request")
+	}
+
+	err = s.OrderRepository.UpdateOrderStatus(OrderID.ID, OrderID.Status)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.JSON(http.StatusOK, "Order status updated")
+}
