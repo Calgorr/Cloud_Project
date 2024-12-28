@@ -1,5 +1,7 @@
 package config
 
+import "github.com/spf13/viper"
+
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Postgres PostgresConfig `yaml:"postgres"`
@@ -21,4 +23,18 @@ type Postgres struct {
 	Password         string `yaml:"password"`
 	DBName           string `yaml:"db_name"`
 	AutoCreateTables bool   `yaml:"auto_create_tables"`
+}
+
+func LoadConfig(filename string) (*Config, error) {
+	v := viper.New()
+	v.SetConfigFile(filename)
+	v.SetConfigType("yml")
+	if err := v.ReadInConfig(); err != nil {
+		return nil, err
+	}
+	cfg := &Config{}
+	if err := v.Unmarshal(cfg); err != nil {
+		return nil, err
+	}
+	return cfg, nil
 }
