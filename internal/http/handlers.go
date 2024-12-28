@@ -14,7 +14,7 @@ func (s *Server) CreateOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Bad request")
 	}
 
-	err = s.OrderRepository.Store(order)
+	err = s.OrderRepository.Store(c.Request().Context(), order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
@@ -31,7 +31,7 @@ func (s *Server) GetOrderStatus(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Bad request")
 	}
 
-	status, err := s.OrderRepository.GetOrderStatus(OrderID.ID)
+	status, err := s.OrderRepository.GetOrderStatus(c.Request().Context(), OrderID.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
@@ -50,7 +50,7 @@ func (s *Server) UpdateOrderStatus(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Bad request")
 	}
 
-	err = s.OrderRepository.UpdateOrderStatus(OrderID.ID, OrderID.Status)
+	err = s.OrderRepository.UpdateOrderStatus(c.Request().Context(), OrderID.ID, OrderID.Status)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
