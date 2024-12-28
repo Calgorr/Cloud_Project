@@ -60,15 +60,22 @@ func (s *Server) UpdateOrderStatus(c echo.Context) error {
 }
 
 func (s *Server) Startup(c echo.Context) error {
-	err := s.OrderRepository.Ping(c.Request().Context())
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Failed to connect to the database")
-	}
-
 	cfg, err := config.LoadConfig("./config.yml")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Failed to load configurations")
 	}
 	s.Config = *cfg
 	return c.JSON(http.StatusOK, "Service started successfully")
+}
+
+func (s *Server) Liveness(c echo.Context) error {
+	return c.JSON(http.StatusOK, "Service alive")
+}
+
+func (s *Server) Readiness(c echo.Context) error {
+	err := s.OrderRepository.Ping(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusServiceUnavailable, "Service not ready")
+	}
+	return c.JSON(http.StatusOK, "Service ready")
 }
