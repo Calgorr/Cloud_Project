@@ -1,0 +1,27 @@
+replicaCount: 1
+
+image:
+    repository: calgor/order
+    pullPolicy: Always
+    tag: ""
+
+config:
+  server:
+    port: "8080"
+
+  postgres:
+    masterDb:
+      host: "master-db.example.com"
+      port: "5432"
+      user: "master_user"
+      password: "secure_master_password"
+      db_name: "master_database"
+      auto_create_tables: true
+
+    slaveDb:
+      host: "slave-db.example.com"
+      port: "5432"
+      user: "slave_user"
+      password: "secure_slave_password"
+      db_name: "slave_database"
+      auto_create_tables: false
