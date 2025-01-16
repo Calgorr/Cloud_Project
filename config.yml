@@ -1,0 +1,18 @@
+server:
+  port: "8080"
+
+postgres:
+  masterDb:
+    host: "my-release-postgresql-primary"
+    port: "5432"
+    user: "admin"
+    password: "admin_password"
+    dbName: "mydatabase"
+    autoCreateTables: false
+  slaveDb:
+    host: "my-release-postgresql-read"
+    port: "5432"
+    user: "repl_user"
+    password: "MjROL085LE"
+    dbName: "mydatabase"
+    autoCreateTables: false

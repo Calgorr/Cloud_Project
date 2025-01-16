@@ -10,7 +10,7 @@ import (
 
 type OrderRepository interface {
 	Ping(ctx context.Context) error
-	Store(ctx context.Context, order model.Order) error
+	Store(ctx context.Context, order model.Order) (int, error)
 	GetOrderStatus(ctx context.Context, orderID int) (string, error)
 	UpdateOrderStatus(ctx context.Context, orderID int, status string) error
 }
@@ -39,17 +39,18 @@ func (o *Orders) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (o *Orders) Store(ctx context.Context, order model.Order) error {
-	_, err := o.MasterDB.Exec(context.Background(), "INSERT INTO orders (user_id, product, count, address, status) VALUES ($1, $2, $3, $4, $5)", order.UserID, order.Product, order.Count, order.Address, model.OrderStatusPending)
+func (o *Orders) Store(ctx context.Context, order model.Order) (int, error) {
+	var id int
+	err := o.MasterDB.QueryRow(ctx, "INSERT INTO orders (user_id, product, count, address) VALUES ($1, $2, $3, $4) RETURNING id", order.UserID, order.Product, order.Count, order.Address).Scan(&id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
 
 func (o *Orders) GetOrderStatus(ctx context.Context, orderID int) (string, error) {
 	var status string
-	err := o.SlaveDB.QueryRow(context.Background(), "SELECT status FROM orders WHERE id = $1", orderID).Scan(&status)
+	err := o.SlaveDB.QueryRow(ctx, "SELECT status FROM orders WHERE id = $1", orderID).Scan(&status)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +58,7 @@ func (o *Orders) GetOrderStatus(ctx context.Context, orderID int) (string, error
 }
 
 func (o *Orders) UpdateOrderStatus(ctx context.Context, orderID int, status string) error {
-	_, err := o.MasterDB.Exec(context.Background(), "UPDATE orders SET status = $1 WHERE id = $2", status, orderID)
+	_, err := o.MasterDB.Exec(ctx, "UPDATE orders SET status = $1 WHERE id = $2", status, orderID)
 	if err != nil {
 		return err
 	}

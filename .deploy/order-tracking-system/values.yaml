@@ -3,7 +3,7 @@ replicaCount: 1
 image:
     repository: calgor/order
     pullPolicy: Always
-    tag: ""
+    tag: "v1.1"
 
 config:
   server:
@@ -11,17 +11,17 @@ config:
 
   postgres:
     masterDb:
-      host: "master-db.example.com"
+      host: "my-release-postgresql-primary"
       port: "5432"
-      user: "master_user"
-      password: "secure_master_password"
-      db_name: "master_database"
+      user: "admin"
+      password: "admin_password"
+      db_name: "mydatabase"
       auto_create_tables: true
 
     slaveDb:
-      host: "slave-db.example.com"
+      host: "my-release-postgresql-read"
       port: "5432"
-      user: "slave_user"
-      password: "secure_slave_password"
-      db_name: "slave_database"
+      user: "repl_user"
+      password: "MjROL085LE"
+      db_name: "mydatabase"
       auto_create_tables: false

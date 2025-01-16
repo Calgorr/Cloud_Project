@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"order_system/internal/config"
 	"order_system/model"
@@ -16,24 +17,18 @@ func (s *Server) CreateOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Bad request")
 	}
 
-	err = s.OrderRepository.Store(c.Request().Context(), order)
+	id, err := s.OrderRepository.Store(c.Request().Context(), order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return c.JSON(http.StatusCreated, "Order created")
+	return c.JSON(http.StatusCreated, "Order created"+strconv.Itoa(id))
 }
 
 func (s *Server) GetOrderStatus(c echo.Context) error {
-	OrderID := struct {
-		ID int `json:"id"`
-	}{}
-	err := c.Bind(&OrderID)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Bad request")
-	}
-
-	status, err := s.OrderRepository.GetOrderStatus(c.Request().Context(), OrderID.ID)
+	orderID := c.Param("id")
+	orderIDs, _ := strconv.Atoi(orderID)
+	status, err := s.OrderRepository.GetOrderStatus(c.Request().Context(), orderIDs)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Internal server error")
 	}
@@ -61,11 +56,11 @@ func (s *Server) UpdateOrderStatus(c echo.Context) error {
 }
 
 func (s *Server) Startup(c echo.Context) error {
-	cfg, err := config.LoadConfig("./config.yml")
+	cfg, err := config.LoadConfig("/app/config.yaml")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Failed to load configurations")
 	}
-	s.Config = *cfg
+	s.Config = cfg
 	return c.JSON(http.StatusOK, "Service started successfully")
 }
 

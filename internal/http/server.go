@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"order_system/internal/config"
@@ -14,21 +15,30 @@ import (
 type Server struct {
 	e               *echo.Echo
 	OrderRepository repository.OrderRepository
-	Config          config.Config
+	Config          *config.Config
 }
 
 func NewServer() *Server {
+	cfg, err := config.LoadConfig("/app/config.yaml")
+	if err != nil {
+		log.Fatalf("Unable to load config: %v\n", err)
+	}
 	return &Server{
-		e: echo.New(),
+		e:      echo.New(),
+		Config: cfg,
 	}
 }
 
 func (s *Server) Start(port string) error {
+	fmt.Println("Starting server on port", s.Config)
 	s.withPostgres()
 	v1 := s.e.Group("/v1")
 	v1.POST("/orders", s.CreateOrder)
 	v1.GET("/orders/:id/status", s.GetOrderStatus)
 	v1.PUT("/orders/:id", s.UpdateOrderStatus)
+	v1.GET("/startup", s.Startup)
+	v1.GET("/readiness", s.Readiness)
+	v1.GET("/liveness", s.Liveness)
 	return s.e.Start(":" + port)
 }
 
